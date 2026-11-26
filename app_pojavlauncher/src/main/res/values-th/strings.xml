@@ -114,6 +114,7 @@
     <string name="main_install_jar_file">ดำเนินการ .jar</string>
     <string name="main_play">เล่น</string>
     <string name="main_download_and_play">ดาวน์โหลดและเล่น</string>
+    <string name="launcher_footer">1.26.3.1 · @voiz inc\nไม่ใช่ผลิตภัณฑ์ของ Mojang หรือ Microsoft</string>
     <string name="diag_play_button">ตรวจสอบระบบ</string>
     <string name="diag_title">ผลตรวจสอบ</string>
     <string name="diag_running">กำลังตรวจสอบ อาจใช้เวลาประมาณ 1 นาที</string>

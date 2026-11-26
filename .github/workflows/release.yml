@@ -1,0 +1,54 @@
+name: Release APK
+
+# Pushing a tag such as v1.26.3.1 builds the APK from that commit and publishes it as a GitHub Release.
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    env:
+      CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          validate-wrappers: false
+          gradle-version: "9.6.1"
+
+      - name: Run scripts
+        run: |
+          ./scripts/languagelist_updater.sh
+          mkdir out
+
+      - name: Build APK
+        run: |
+          gradle :app_pojavlauncher:assembleDebug
+          mv app_pojavlauncher/build/outputs/apk/debug/app_pojavlauncher-debug.apk out/Minecraft-Java-Edition-1.26.3.1.apk
+          md5sum out/Minecraft-Java-Edition-1.26.3.1.apk > out/Minecraft-Java-Edition-1.26.3.1.md5
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            out/Minecraft-Java-Edition-1.26.3.1.apk \
+            out/Minecraft-Java-Edition-1.26.3.1.md5 \
+            --verify-tag \
+            --title "Minecraft Java Edition 1.26.3.1" \
+            --notes "Unofficial build by voiz inc. Not affiliated with Mojang or Microsoft. Built from commit $GITHUB_SHA"

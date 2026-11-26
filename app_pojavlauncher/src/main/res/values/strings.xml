@@ -160,6 +160,7 @@
     <string name="main_install_jar_file">Execute a .jar</string>
     <string name="main_play">Play</string>
     <string name="main_download_and_play">Download &amp; Play</string>
+    <string name="launcher_footer">1.26.3.1 · @voiz inc\nUnofficial. Not affiliated with Mojang or Microsoft.</string>
     <string name="diag_play_button">System check</string>
     <string name="diag_title">Launcher check</string>
     <string name="diag_running">Checking, this can take a minute</string>
