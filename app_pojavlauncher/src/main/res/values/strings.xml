@@ -468,6 +468,8 @@
     <string name="change_account">Please change accounts to use this function</string>
     <string name="no_minecraft_account_found">No Minecraft Account Found</string>
     <string name="feature_requires_java_account">This feature requires a Microsoft account that owns Minecraft Java Edition.</string>
+    <string name="version_list_loading">Loading the Minecraft version list. The game starts when it is ready.</string>
+    <string name="version_list_failed">Could not load the Minecraft version list. Check your internet connection and try again.</string>
     <string name="delete_account_and_login">Delete account and log in</string>
     <string name="login_again">Please log in again</string>
     <string name="account_corrupted">Selected account is corrupted</string>

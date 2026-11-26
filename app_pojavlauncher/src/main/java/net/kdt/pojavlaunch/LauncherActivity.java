@@ -170,6 +170,9 @@ public class LauncherActivity extends BaseActivity {
         }
     };
 
+    /** Set while Play waits for the version list to load, so a list that never loads cannot loop. */
+    private boolean mVersionListRequested = false;
+
     private final ExtraListener<Boolean> mLaunchGameListener = (key, value) -> {
         if (DiagnosticReport.ENABLED) { // debug build: only the device check, never a download or a launch
             DiagnosticReport.run(this);
@@ -237,11 +240,29 @@ public class LauncherActivity extends BaseActivity {
             }
         }
 
+        // The version list is downloaded in the background when the app starts. If Play is pressed
+        // before it arrives (or its download failed), fetch it now and start the game once it is there.
+        if (ExtraCore.getValue(ExtraConstants.RELEASE_TABLE) == null && !mVersionListRequested) {
+            mVersionListRequested = true;
+            Toast.makeText(this, R.string.version_list_loading, Toast.LENGTH_SHORT).show();
+            new AsyncVersionList().getVersionList(versions -> Tools.runOnUiThread(() -> {
+                ExtraCore.setValue(ExtraConstants.RELEASE_TABLE, versions); // ignored when the download failed
+                ExtraCore.setValue(ExtraConstants.LAUNCH_GAME, true);
+                mVersionListRequested = false;
+            }), false);
+            return false;
+        }
+
         String normalizedVersionId = AsyncMinecraftDownloader.normalizeVersionId(prof.lastVersionId);
         JMinecraftVersionList.Version mcVersion = AsyncMinecraftDownloader.getListedVersion(normalizedVersionId);
 
         // Do not load when is a modded version or older than minecraft 1.3 on demo account
         if (mAccountSpinner.getSelectedAccount().isDemo()) {
+            if (ExtraCore.getValue(ExtraConstants.RELEASE_TABLE) == null) {
+                // The version cannot be checked without the version list, which could not be loaded
+                hasNoOnlineProfileDialog(this, getString(R.string.global_error), getString(R.string.version_list_failed));
+                return false;
+            }
             boolean isOlderThan13 = true;
 
             if (mcVersion != null) {
