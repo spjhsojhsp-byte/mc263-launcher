@@ -24,6 +24,7 @@ import androidx.fragment.app.Fragment;
 import com.kdt.mcgui.mcVersionSpinner;
 
 import net.kdt.pojavlaunch.CustomControlsActivity;
+import net.kdt.pojavlaunch.DiagnosticReport;
 import net.kdt.pojavlaunch.R;
 import net.kdt.pojavlaunch.Tools;
 import net.kdt.pojavlaunch.extra.ExtraConstants;
@@ -85,6 +86,10 @@ public class MainMenuFragment extends Fragment {
         mEditProfileButton.setOnClickListener(v -> mVersionSpinner.openProfileEditor(requireActivity()));
 
         mPlayButton.setOnClickListener(v -> {
+            if (DiagnosticReport.ENABLED) { // debug build: check the device instead of downloading or starting the game
+                DiagnosticReport.run(requireActivity());
+                return;
+            }
             if (Tools.hasMods("sodium") && !(LauncherPreferences.DEFAULT_PREF.getBoolean("sodium_override", false))) {
                 AlertDialog sodiumWarningDialog = new AlertDialog.Builder(requireContext())
                         .setTitle(R.string.sodium_warning_title)
@@ -134,6 +139,10 @@ public class MainMenuFragment extends Fragment {
 
     /** The first press downloads the game and then starts it; once it is installed the same button just plays. */
     private void refreshPlayButtonLabel() {
+        if (DiagnosticReport.ENABLED) {
+            mPlayButton.setText(R.string.diag_play_button);
+            return;
+        }
         File installedJar = new File(Tools.DIR_HOME_VERSION, LOCKED_VERSION_ID + "/" + LOCKED_VERSION_ID + ".jar");
         mPlayButton.setText(installedJar.exists() ? R.string.main_play : R.string.main_download_and_play);
     }

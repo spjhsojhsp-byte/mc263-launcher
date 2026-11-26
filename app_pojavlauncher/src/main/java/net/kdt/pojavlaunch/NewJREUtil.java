@@ -163,6 +163,28 @@ public class NewJREUtil {
                 activity.getString(R.string.multirt_nocompatiblert, verInfo.javaVersion.majorVersion));
     }
 
+    /**
+     * Debug check for the bundled Java 25 runtime. Unpacks it when the copy in the APK is not the
+     * one installed yet. Unlike {@link #installNewJreIfNeeded} it never edits the launch profile,
+     * never downloads, and lets the real error reach the caller.
+     * @return a short description of what was done
+     */
+    public static String diagnoseBundledJava25(Context context) throws IOException {
+        AssetManager assetManager = context.getAssets();
+        InternalRuntime runtime = InternalRuntime.JRE_25;
+        String bundledVersion = Tools.read(assetManager.open(runtime.path + "/version"));
+        String installedVersion = MultiRTUtils.readInternalRuntimeVersion(runtime.name);
+        if (bundledVersion.equals(installedVersion)) {
+            return "already installed, version " + installedVersion;
+        }
+        MultiRTUtils.installRuntimeNamedBinpack(
+                assetManager.open(runtime.path + "/universal.tar.xz"),
+                assetManager.open(runtime.path + "/bin-" + archAsString(Tools.DEVICE_ARCHITECTURE) + ".tar.xz"),
+                runtime.name, bundledVersion);
+        MultiRTUtils.postPrepare(runtime.name);
+        return "unpacked version " + bundledVersion;
+    }
+
     public static boolean isJavaVersionAvailableForDownload(int version) {
         for (ExternalRuntime javaVersion : ExternalRuntime.values()) {
             if (javaVersion.majorVersion == version) {

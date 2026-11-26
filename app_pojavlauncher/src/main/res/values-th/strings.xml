@@ -114,6 +114,11 @@
     <string name="main_install_jar_file">ดำเนินการ .jar</string>
     <string name="main_play">เล่น</string>
     <string name="main_download_and_play">ดาวน์โหลดและเล่น</string>
+    <string name="diag_play_button">ตรวจสอบระบบ</string>
+    <string name="diag_title">ผลตรวจสอบ</string>
+    <string name="diag_running">กำลังตรวจสอบ อาจใช้เวลาประมาณ 1 นาที</string>
+    <string name="diag_share">แชร์รายงาน</string>
+    <string name="diag_close">ปิด</string>
     <string name="autoram_info_msg">ตั้งหน่วยความจำเป็น %d MB</string>
     <string name="mcl_setting_check_libraries">ตรวจสอบไฟล์หลังจากดาวโหลด</string>
     <string name="mcl_setting_check_libraries_subtitle">ตัวเลือกนี้บังคับให้ตัวเรียกใช้งานตรวจสอบแฮชของไลบรารีหากมี\'sป้องกันการดาวน์โหลดที่เสียหาย</string>
