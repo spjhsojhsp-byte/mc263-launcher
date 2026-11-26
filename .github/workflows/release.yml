@@ -46,9 +46,14 @@ jobs:
       - name: Publish GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          gh release create "$GITHUB_REF_NAME" \
-            out/Minecraft-Java-Edition-1.26.3.1.apk \
-            out/Minecraft-Java-Edition-1.26.3.1.md5 \
-            --verify-tag \
-            --title "Minecraft Java Edition 1.26.3.1" \
-            --notes "Unofficial build by voiz inc. Not affiliated with Mojang or Microsoft. Built from commit $GITHUB_SHA"
+          APK=out/Minecraft-Java-Edition-1.26.3.1.apk
+          MD5=out/Minecraft-Java-Edition-1.26.3.1.md5
+          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            # A release for this tag was already created on GitHub, so only attach the files.
+            gh release upload "$GITHUB_REF_NAME" "$APK" "$MD5" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" "$APK" "$MD5" \
+              --verify-tag \
+              --title "Minecraft Java Edition 1.26.3.1" \
+              --notes "Unofficial build by voiz inc. Not affiliated with Mojang or Microsoft. Built from commit $GITHUB_SHA"
+          fi
