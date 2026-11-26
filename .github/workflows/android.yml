@@ -13,6 +13,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
+    permissions:
+      contents: write
     env:
       CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
     steps:
@@ -54,3 +56,16 @@ jobs:
         with:
           name: app-debug
           path: out/app-debug.*
+
+      # One "debug-latest" pre-release always holds the newest APK built from main.
+      - name: Publish APK to Releases
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete debug-latest --yes --cleanup-tag || true
+          gh release create debug-latest out/app-debug.apk out/app-debug.md5 \
+            --target "$GITHUB_SHA" \
+            --title "Debug build (latest)" \
+            --notes "Built from commit $GITHUB_SHA" \
+            --prerelease
