@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public final class DiagnosticReport {
     /** true: Play runs this check instead of downloading and starting the game. */
-    public static final boolean ENABLED = true;
+    public static final boolean ENABLED = false;
 
     private static final String GAME_VERSION = "26.3.1";
     private static final String MOJANG_VERSION_LIST = "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json";

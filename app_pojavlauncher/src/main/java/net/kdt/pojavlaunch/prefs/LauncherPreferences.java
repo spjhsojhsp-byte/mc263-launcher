@@ -244,9 +244,12 @@ public class LauncherPreferences {
          */
         MGConfigJson.put("enableANGLE", Tools.useANGLE ? 3 : 2);
         MGConfigJson.put("enableNoError", Integer.parseInt(DEFAULT_PREF.getString("mg_renderer_setting_errorSetting", "0")));
+        // MobileGlues reads customGLVersion as an integer: 43 is OpenGL 4.3. A string such as "4.3.0" is not read, and MobileGlues falls back to 4.0.0
+        MGConfigJson.put("customGLVersion", 43);
 
         // These guys are SwitchPreferences so they get special treatment, they need to be converted to ints
-        int computeShaderext = DEFAULT_PREF.getBoolean("mg_renderer_computeShaderext", false) ? 1 : 0;
+        // MobileGlues merged its OpenGL43 option into ARB_compute_shader, so the extension stays on for GL 4.3
+        int computeShaderext = DEFAULT_PREF.getBoolean("mg_renderer_computeShaderext", true) ? 1 : 0;
         int angleDepthClearFixMode = DEFAULT_PREF.getBoolean("mg_renderer_setting_angleDepthClearFixMode", false) ? 1 : 0;
         int timerQueryExt = DEFAULT_PREF.getBoolean("mg_renderer_setting_timerQueryExt", false) ? 1 : 0;
         int dsaExt = DEFAULT_PREF.getBoolean("mg_renderer_dsaExt", false) ? 1 : 0;

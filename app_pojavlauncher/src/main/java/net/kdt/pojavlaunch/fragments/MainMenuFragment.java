@@ -29,9 +29,11 @@ import net.kdt.pojavlaunch.R;
 import net.kdt.pojavlaunch.Tools;
 import net.kdt.pojavlaunch.extra.ExtraConstants;
 import net.kdt.pojavlaunch.extra.ExtraCore;
+import net.kdt.pojavlaunch.extra.ExtraListener;
 import net.kdt.pojavlaunch.modloaders.LWJGL3ifyUtils;
 import net.kdt.pojavlaunch.prefs.LauncherPreferences;
 import net.kdt.pojavlaunch.progresskeeper.ProgressKeeper;
+import net.kdt.pojavlaunch.tasks.AsyncMinecraftDownloader;
 import net.kdt.pojavlaunch.value.launcherprofiles.LauncherProfiles;
 import net.kdt.pojavlaunch.value.launcherprofiles.MinecraftProfile;
 
@@ -41,8 +43,11 @@ import java.util.List;
 public class MainMenuFragment extends Fragment {
     public static final String TAG = "MainMenuFragment";
 
-    /** The only Minecraft version this build plays. Its Java 25 runtime is bundled in the APK. */
-    private static final String LOCKED_VERSION_ID = "26.3.1";
+    /** Fires when the version list has loaded, which is when the newest release is known. */
+    private final ExtraListener<Object> mVersionListListener = (key, value) -> {
+        runOnUiThread(this::refreshPlayButtonLabel);
+        return false;
+    };
 
     private mcVersionSpinner mVersionSpinner;
     private Button mPlayButton;
@@ -63,6 +68,7 @@ public class MainMenuFragment extends Fragment {
         ImageButton mEditProfileButton = view.findViewById(R.id.edit_profile_button);
         mPlayButton = view.findViewById(R.id.play_button);
         mVersionSpinner = view.findViewById(R.id.mc_version_spinner);
+        ExtraCore.addExtraListener(ExtraConstants.RELEASE_TABLE, mVersionListListener);
 
         // The version is locked, so the entries that would change the launcher are hidden.
         // The spinner stays in the view tree (hidden): it still stores the selected profile that launching reads.
@@ -139,12 +145,24 @@ public class MainMenuFragment extends Fragment {
 
     /** The first press downloads the game and then starts it; once it is installed the same button just plays. */
     private void refreshPlayButtonLabel() {
+        if (getContext() == null || mPlayButton == null) return; // the listener can run after the view is gone
         if (DiagnosticReport.ENABLED) {
             mPlayButton.setText(R.string.diag_play_button);
             return;
         }
-        File installedJar = new File(Tools.DIR_HOME_VERSION, LOCKED_VERSION_ID + "/" + LOCKED_VERSION_ID + ".jar");
-        mPlayButton.setText(installedJar.exists() ? R.string.main_play : R.string.main_download_and_play);
+        String versionId = AsyncMinecraftDownloader.getPlayVersionId(getSavedVersionId());
+        boolean installed = AsyncMinecraftDownloader.isVersionInstalled(versionId, Tools.isDemoProfile(requireContext()));
+        mPlayButton.setText(installed ? R.string.main_play : R.string.main_download_and_play);
+    }
+
+    /** The version id saved in the current profile */
+    private String getSavedVersionId() {
+        try {
+            String savedVersionId = LauncherProfiles.getCurrentProfile().lastVersionId;
+            return savedVersionId != null ? savedVersionId : MinecraftProfile.LATEST_RELEASE;
+        } catch (RuntimeException e) {
+            return MinecraftProfile.LATEST_RELEASE;
+        }
     }
 
     private void runInstallerWithConfirmation(boolean isCustomArgs) {

@@ -94,10 +94,13 @@ public class mcAccountSpinner extends AppCompatSpinner implements AdapterView.On
     private final DoneListener mDoneListener = account -> {
         Toast.makeText(getContext(), R.string.main_login_done, Toast.LENGTH_SHORT).show();
 
-        // Check if the account being added is not one that is already existing
-        // Like login twice on the same mc account...
-        for(String mcAccountName : mAccountList){
-            if(mcAccountName.equals(account.username)) return;
+        // If the account is already in the list (like logging in twice on the same mc account),
+        // select that entry instead. Index 0 is the "Add account" item, so it is skipped.
+        for(int i = 1; i < mAccountList.size(); i++){
+            if(mAccountList.get(i).equals(account.username)){
+                reloadAccounts(false, i); // Reads the account file again, so the newest data is used
+                return;
+            }
         }
 
         mSelectecAccount = account;

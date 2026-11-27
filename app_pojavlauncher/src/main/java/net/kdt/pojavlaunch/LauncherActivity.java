@@ -170,6 +170,9 @@ public class LauncherActivity extends BaseActivity {
         }
     };
 
+    /** Set while Play waits for the version list to load, so a list that never loads cannot loop. */
+    private boolean mVersionListRequested = false;
+
     private final ExtraListener<Boolean> mLaunchGameListener = (key, value) -> {
         if (DiagnosticReport.ENABLED) { // debug build: only the device check, never a download or a launch
             DiagnosticReport.run(this);
@@ -237,11 +240,42 @@ public class LauncherActivity extends BaseActivity {
             }
         }
 
-        String normalizedVersionId = AsyncMinecraftDownloader.normalizeVersionId(prof.lastVersionId);
+        // The version list is downloaded in the background when the app starts. If Play is pressed
+        // before it arrives (or its download failed), fetch it now and start the game once it is there.
+        if (ExtraCore.getValue(ExtraConstants.RELEASE_TABLE) == null && !mVersionListRequested) {
+            mVersionListRequested = true;
+            Toast.makeText(this, R.string.version_list_loading, Toast.LENGTH_SHORT).show();
+            new AsyncVersionList().getVersionList(versions -> Tools.runOnUiThread(() -> {
+                ExtraCore.setValue(ExtraConstants.RELEASE_TABLE, versions); // ignored when the download failed
+                ExtraCore.setValue(ExtraConstants.LAUNCH_GAME, true);
+                mVersionListRequested = false;
+            }), false);
+            return false;
+        }
+
+        // The game plays the newest release in the version list, and the profile keeps that id.
+        // Without the list, the id saved in the profile is used, so a game that is already downloaded still starts offline.
+        boolean hasVersionList = ExtraCore.getValue(ExtraConstants.RELEASE_TABLE) != null;
+        String playVersionId = AsyncMinecraftDownloader.getPlayVersionId(prof.lastVersionId);
+        if (hasVersionList && !playVersionId.equals(prof.lastVersionId)) {
+            prof.lastVersionId = playVersionId;
+            LauncherProfiles.mainProfileJson.profiles.put(selectedProfile, prof);
+            LauncherProfiles.write();
+        }
+        boolean isDemoAccount = mAccountSpinner.getSelectedAccount().isDemo();
+        // Without the version list the newest release is unknown: only a game that is already downloaded can start, and only offline
+        boolean installedOffline = AsyncMinecraftDownloader.isVersionInstalled(playVersionId, isDemoAccount) && !isOnline(this);
+        if (MinecraftProfile.LATEST_RELEASE.equals(playVersionId) || (!hasVersionList && !installedOffline)) {
+            hasNoOnlineProfileDialog(this, getString(R.string.global_error), getString(R.string.version_list_failed));
+            return false;
+        }
+
+        String normalizedVersionId = playVersionId;
         JMinecraftVersionList.Version mcVersion = AsyncMinecraftDownloader.getListedVersion(normalizedVersionId);
 
-        // Do not load when is a modded version or older than minecraft 1.3 on demo account
-        if (mAccountSpinner.getSelectedAccount().isDemo()) {
+        // Do not load when is a modded version or older than minecraft 1.3 on demo account.
+        // Without the version list this check is skipped, because the game was already downloaded from an online start.
+        if (isDemoAccount && hasVersionList) {
             boolean isOlderThan13 = true;
 
             if (mcVersion != null) {
@@ -490,7 +524,7 @@ public class LauncherActivity extends BaseActivity {
     private void bindViews(){
         mFragmentView = findViewById(R.id.container_fragment);
         mSettingsButton = findViewById(R.id.setting_button);
-        // Settings are turned off in this build: RAM, renderer and runtime are fixed for Minecraft 26.3.1
+        // Settings are turned off in this build: RAM, renderer and runtime are fixed for the newest Minecraft release
         mSettingsButton.setVisibility(View.GONE);
         mAccountSpinner = findViewById(R.id.account_spinner);
         mProgressLayout = findViewById(R.id.progress_layout);
