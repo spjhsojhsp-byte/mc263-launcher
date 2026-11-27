@@ -241,6 +241,8 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
                 // Shitty hack to make OSMZink smoothly transition into kopper
                 if (minecraftProfile.pojavRendererName.equals("vulkan_zink")) Tools.LOCAL_RENDERER = "opengles3_desktopgl_zink_kopper";
             }
+            // Test build: MobileGlues never reports GL errors, and the OpenGL backend of Minecraft 26.x fails at start because of it, so Zink (kopper) runs instead
+            Tools.LOCAL_RENDERER = "opengles3_desktopgl_zink_kopper";
 
             setTitle("Minecraft " + minecraftProfile.lastVersionId);
 
