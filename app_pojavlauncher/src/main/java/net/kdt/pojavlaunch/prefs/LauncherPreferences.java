@@ -248,7 +248,8 @@ public class LauncherPreferences {
         MGConfigJson.put("customGLVersion", "4.3.0");
 
         // These guys are SwitchPreferences so they get special treatment, they need to be converted to ints
-        int computeShaderext = DEFAULT_PREF.getBoolean("mg_renderer_computeShaderext", false) ? 1 : 0;
+        // GL 4.3 needs the compute shader extension (MobileGlues folded its OpenGL43 option into it), otherwise customGLVersion is clamped to 4.0.0
+        int computeShaderext = DEFAULT_PREF.getBoolean("mg_renderer_computeShaderext", true) ? 1 : 0;
         int angleDepthClearFixMode = DEFAULT_PREF.getBoolean("mg_renderer_setting_angleDepthClearFixMode", false) ? 1 : 0;
         int timerQueryExt = DEFAULT_PREF.getBoolean("mg_renderer_setting_timerQueryExt", false) ? 1 : 0;
         int dsaExt = DEFAULT_PREF.getBoolean("mg_renderer_dsaExt", false) ? 1 : 0;
