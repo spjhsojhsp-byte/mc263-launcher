@@ -20,7 +20,7 @@
         <androidx.preference.ListPreference
             android:title="@string/mg_renderer_title_errorSetting"
             android:key="mg_renderer_setting_errorSetting"
-            android:defaultValue="0"
+            android:defaultValue="2"
             android:entries="@array/mg_renderer_names_errorSetting"
             android:entryValues="@array/mg_renderer_values_errorSetting"
             app2:useSimpleSummaryProvider="true"/>

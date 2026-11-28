@@ -243,7 +243,8 @@ public class LauncherPreferences {
         };
          */
         MGConfigJson.put("enableANGLE", Tools.useANGLE ? 3 : 2);
-        MGConfigJson.put("enableNoError", Integer.parseInt(DEFAULT_PREF.getString("mg_renderer_setting_errorSetting", "0")));
+        // Minecraft 26.3-snapshot-3 and later need "Ignore shader/program errors" on (MobileGlues level 2), so that is the default now
+        MGConfigJson.put("enableNoError", Integer.parseInt(DEFAULT_PREF.getString("mg_renderer_setting_errorSetting", "2")));
         // MobileGlues reads customGLVersion as an integer: 43 is OpenGL 4.3. A string such as "4.3.0" is not read, and MobileGlues falls back to 4.0.0
         MGConfigJson.put("customGLVersion", 43);
 
