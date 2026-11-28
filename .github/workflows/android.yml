@@ -42,6 +42,10 @@ jobs:
           ./scripts/languagelist_updater.sh
           mkdir out
 
+      # libltw.so (the OpenLTW renderer) is built from source at a pinned commit, see scripts/build-ltw.sh
+      - name: Build libltw.so
+        run: ./scripts/build-ltw.sh
+
       - name: Build Debug .apk
         run: |
           gradle :app_pojavlauncher:assembleDebug

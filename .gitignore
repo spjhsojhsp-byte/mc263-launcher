@@ -10,6 +10,7 @@ app_pojavlauncher/.cxx/
 .vs/
 /curseforge_key.txt
 /app_pojavlauncher/libs/ltw-release.aar
+/app_pojavlauncher/src/main/jniLibs/arm64-v8a/libltw.so
 /jre_lwjgl3glfw/gradle/
 /jre_lwjgl3glfw/**/build/
 /jre_lwjgl3glfw/**/.gradle/

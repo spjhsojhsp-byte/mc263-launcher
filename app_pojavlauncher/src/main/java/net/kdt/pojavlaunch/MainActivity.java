@@ -241,6 +241,8 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
                 // Shitty hack to make OSMZink smoothly transition into kopper
                 if (minecraftProfile.pojavRendererName.equals("vulkan_zink")) Tools.LOCAL_RENDERER = "opengles3_desktopgl_zink_kopper";
             }
+            // Test build: every game starts with OpenLTW, whatever renderer the profile has. Remove this line to use the profile's renderer again.
+            Tools.LOCAL_RENDERER = "opengles3_ltw";
 
             setTitle("Minecraft " + minecraftProfile.lastVersionId);
 
