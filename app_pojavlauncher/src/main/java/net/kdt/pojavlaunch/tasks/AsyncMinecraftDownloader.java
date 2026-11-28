@@ -27,13 +27,17 @@ public class AsyncMinecraftDownloader {
     }
 
     /**
-     * The version Play starts: the newest release in the version list, or the saved id while the list is not loaded.
-     * @param savedVersionId The version id saved in the profile
+     * Test build: the version Play starts, instead of the newest release. 26.x stops at the glGetError mismatch on the
+     * Mali-G57 MC2, while 1.21.x runs with MobileGlues on that GPU. Remove this lock to play the newest release again.
+     */
+    public static final String TEST_PLAY_VERSION_ID = "1.21.11";
+
+    /**
+     * The version Play starts: TEST_PLAY_VERSION_ID in this build.
+     * @param savedVersionId The version id saved in the profile (not used in this build)
      */
     public static String getPlayVersionId(String savedVersionId) {
-        String latestRelease = normalizeVersionId(MinecraftProfile.LATEST_RELEASE);
-        if (latestRelease != null && !MinecraftProfile.LATEST_RELEASE.equals(latestRelease)) return latestRelease;
-        return savedVersionId;
+        return TEST_PLAY_VERSION_ID;
     }
 
     /** Whether the game version is already downloaded for that account type, so it can start without the internet */

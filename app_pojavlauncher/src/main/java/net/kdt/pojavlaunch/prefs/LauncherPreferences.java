@@ -249,8 +249,8 @@ public class LauncherPreferences {
         MGConfigJson.put("customGLVersion", 43);
 
         // These guys are SwitchPreferences so they get special treatment, they need to be converted to ints
-        // MobileGlues merged its OpenGL43 option into ARB_compute_shader, so the extension stays on for GL 4.3
-        int computeShaderext = DEFAULT_PREF.getBoolean("mg_renderer_computeShaderext", true) ? 1 : 0;
+        // Off by default: on a Mali-G52 MC2 the compute path dropped the game from about 30 to 6 FPS (MobileGlues issue #412)
+        int computeShaderext = DEFAULT_PREF.getBoolean("mg_renderer_computeShaderext", false) ? 1 : 0;
         int angleDepthClearFixMode = DEFAULT_PREF.getBoolean("mg_renderer_setting_angleDepthClearFixMode", false) ? 1 : 0;
         int timerQueryExt = DEFAULT_PREF.getBoolean("mg_renderer_setting_timerQueryExt", false) ? 1 : 0;
         int dsaExt = DEFAULT_PREF.getBoolean("mg_renderer_dsaExt", false) ? 1 : 0;
