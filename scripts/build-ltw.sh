@@ -5,6 +5,9 @@
 # OpenGL backend on the device's OpenGL ES 3 driver, the way MojoLauncher does for Minecraft 26.x. The commit and
 # the NDK are pinned, so every build of this repository ships the same library.
 #
+# SDL3 loads its EGL functions from libltw.so by name. scripts/ltw_egl_forward.c adds the ones LTW does not implement,
+# and the check at the end fails the build when one of them is not exported.
+#
 # Needs ANDROID_SDK_ROOT (or ANDROID_HOME), git and cmake. Installs the NDK into the SDK when it is missing.
 set -eu
 
@@ -34,6 +37,12 @@ trap 'rm -rf "$WORK"' EXIT
 git clone --quiet "$LTW_REPO" "$WORK/ltw-src"
 git -C "$WORK/ltw-src" checkout --quiet "$LTW_COMMIT"
 
+LTW_DIR="$WORK/ltw-src/ltw/src/main/tinywrapper"
+cp "$ROOT/scripts/ltw_egl_forward.c" "$LTW_DIR/egl_forward.c"
+echo 'target_sources(ltw PRIVATE egl_forward.c)' >> "$LTW_DIR/CMakeLists.txt"
+# The desktop OpenGL hook in ltw_egl_forward.c replaces this pointer, so it must still be a plain global in egl.c
+grep -q '^EGLContext (\*host_eglCreateContext)(' "$LTW_DIR/egl.c" || { echo "LTW egl.c no longer defines host_eglCreateContext, update scripts/ltw_egl_forward.c" >&2; exit 1; }
+
 cmake -S "$WORK/ltw-src/ltw/src/main/tinywrapper" -B "$WORK/build" \
     -DCMAKE_TOOLCHAIN_FILE="$NDK_DIR/build/cmake/android.toolchain.cmake" \
     -DANDROID_ABI=arm64-v8a \
@@ -49,4 +58,11 @@ cp "$WORK/build/libltw.so" "$OUT_DIR/libltw.so"
 READELF="$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-readelf"
 "$READELF" -h "$OUT_DIR/libltw.so" | grep -E "Class|Machine" || true
 "$READELF" -d "$OUT_DIR/libltw.so" | grep NEEDED || true
+
+# SDL3 finds every EGL name in the forwarder list by dlsym, so the library must export each one of them
+EGL_NAMES="$(grep -o 'X(egl[A-Za-z0-9]*)' "$ROOT/scripts/ltw_egl_forward.c" | sed 's/^X(//; s/)$//')"
+[ -n "$EGL_NAMES" ] || { echo "No EGL names found in scripts/ltw_egl_forward.c" >&2; exit 1; }
+for name in $EGL_NAMES; do
+    "$READELF" --dyn-syms "$OUT_DIR/libltw.so" | grep -q " $name\$" || { echo "libltw.so does not export $name" >&2; exit 1; }
+done
 echo "Built libltw.so from $LTW_REPO at $LTW_COMMIT into $OUT_DIR"

@@ -224,7 +224,7 @@ public class JREUtils {
             envMap.put("AMETHYST_RENDERER", LOCAL_RENDERER);
             if(LOCAL_RENDERER.equals("opengles3_ltw")) {
                 envMap.put("LIBGL_ES", "3");
-                envMap.put("POJAVEXEC_EGL","libltw.so"); // Use ANGLE EGL
+                envMap.put("POJAVEXEC_EGL","libltw.so"); // libltw.so also exports the EGL functions SDL loads, see scripts/ltw_egl_forward.c
                 // Load LTW directly, as MojoLauncher does, with no SimpleFPEWrapper in front of it
                 Tools.useSFPEW = false;
             }
